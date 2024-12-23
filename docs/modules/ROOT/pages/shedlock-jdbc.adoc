@@ -47,7 +47,7 @@ quarkus.datasource.db-kind=postgresql
 
 include::includes/quarkus-shedlock.adoc[opts=optional, leveloffset=+1]
 
-include::includes/quarkus-shedlock-jdbc.adoc[opts=optional, leveloffset=+1]
+include::includes/quarkus-shedlock-provider-jdbc.adoc[opts=optional, leveloffset=+1]
 
 == How to use it
 

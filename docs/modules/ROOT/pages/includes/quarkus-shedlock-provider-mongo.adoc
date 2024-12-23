@@ -1,23 +1,24 @@
-
-:summaryTableId: quarkus-shedlock-mongo
 [.configuration-legend]
 icon:lock[title=Fixed at build time] Configuration property fixed at build time - All other configuration properties are overridable at runtime
 [.configuration-reference.searchable, cols="80,.^10,.^10"]
 |===
 
-h|[[quarkus-shedlock-mongo_quarkus-shedlock-mongo-mongoclients-mongo-client-configuration]]link:#quarkus-shedlock-mongo_quarkus-shedlock-mongo-mongoclients-mongo-client-configuration[Mongo client configuration]
-
+h|[.header-title]##Configuration property##
 h|Type
 h|Default
 
-a| [[quarkus-shedlock-mongo_quarkus-shedlock-mongo-database-name]]`link:#quarkus-shedlock-mongo_quarkus-shedlock-mongo-database-name[quarkus.shedlock.mongo.database-name]`
+h|[[quarkus-shedlock-provider-mongo_section_quarkus-shedlock-mongo]] [.section-name.section-level0]##link:#quarkus-shedlock-provider-mongo_section_quarkus-shedlock-mongo[Mongo client configuration]##
+h|Type
+h|Default
 
-`link:#quarkus-shedlock-mongo_quarkus-shedlock-mongo-database-name[quarkus.shedlock.mongo."mongoclient-name".database-name]`
+a| [[quarkus-shedlock-provider-mongo_quarkus-shedlock-mongo-database-name]] [.property-path]##link:#quarkus-shedlock-provider-mongo_quarkus-shedlock-mongo-database-name[`quarkus.shedlock.mongo.database-name`]##
 
+`quarkus.shedlock.mongo."mongoclient-name".database-name`
 
 [.description]
 --
 database name for mongo client (default to shedLock)
+
 
 ifdef::add-copy-button-to-env-var[]
 Environment variable: env_var_with_copy_button:+++QUARKUS_SHEDLOCK_MONGO_DATABASE_NAME+++[]
@@ -25,7 +26,10 @@ endif::add-copy-button-to-env-var[]
 ifndef::add-copy-button-to-env-var[]
 Environment variable: `+++QUARKUS_SHEDLOCK_MONGO_DATABASE_NAME+++`
 endif::add-copy-button-to-env-var[]
---|string 
+--
+|string
 |`shedLock`
 
+
 |===
+
