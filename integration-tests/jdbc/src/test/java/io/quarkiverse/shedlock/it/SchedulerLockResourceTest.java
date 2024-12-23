@@ -27,7 +27,7 @@ class SchedulerLockResourceTest {
     @Test
     void testShedlockEndpoint() {
         given()
-                .when().get("/shedlock")
+                .when().post("/shedlock")
                 .then()
                 .statusCode(204);
 
@@ -48,7 +48,7 @@ class SchedulerLockResourceTest {
     @Test
     void testShedlockEndpointOnMaster() {
         given()
-                .when().get("/shedlock/master")
+                .when().post("/shedlock/master")
                 .then()
                 .statusCode(204);
 

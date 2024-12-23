@@ -25,7 +25,7 @@ class SchedulerLockResourceTest {
     @Test
     void testShedlockEndpoint() {
         given()
-                .when().get("/shedlock")
+                .when().post("/shedlock")
                 .then()
                 .statusCode(204);
 
@@ -39,7 +39,7 @@ class SchedulerLockResourceTest {
     @Test
     void testShedlockEndpointOnClusterOneReactive() {
         given()
-                .when().get("/shedlock/clusterOneReactive")
+                .when().post("/shedlock/clusterOneReactive")
                 .then()
                 .statusCode(204);
 

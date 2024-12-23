@@ -36,7 +36,7 @@ class SchedulerLockResourceTest {
     @Test
     void testShedlockInMemoryEndpoint() {
         given()
-                .when().get("/shedlock/in-memory")
+                .when().post("/shedlock/in-memory")
                 .then()
                 .statusCode(204);
 
@@ -46,7 +46,7 @@ class SchedulerLockResourceTest {
     @Test
     void testShedlockJdbcEndpoint() {
         given()
-                .when().get("/shedlock/jdbc")
+                .when().post("/shedlock/jdbc")
                 .then()
                 .statusCode(204);
 
@@ -67,7 +67,7 @@ class SchedulerLockResourceTest {
     @Test
     void testShedlockMongoEndpoint() {
         given()
-                .when().get("/shedlock/mongo")
+                .when().post("/shedlock/mongo")
                 .then()
                 .statusCode(204);
 
