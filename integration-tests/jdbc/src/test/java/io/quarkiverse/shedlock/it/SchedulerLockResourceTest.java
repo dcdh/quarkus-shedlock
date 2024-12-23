@@ -18,14 +18,14 @@ import io.quarkus.agroal.DataSource;
 import io.quarkus.test.junit.QuarkusTest;
 
 @QuarkusTest
-public class SchedulerLockResourceTest {
+class SchedulerLockResourceTest {
     @Inject
     AgroalDataSource defaultDataSource;
     @DataSource("master")
     AgroalDataSource masterDataSource;
 
     @Test
-    public void testShedlockEndpoint() {
+    void testShedlockEndpoint() {
         given()
                 .when().get("/shedlock")
                 .then()
@@ -46,7 +46,7 @@ public class SchedulerLockResourceTest {
     }
 
     @Test
-    public void testShedlockEndpointOnMaster() {
+    void testShedlockEndpointOnMaster() {
         given()
                 .when().get("/shedlock/master")
                 .then()
@@ -67,7 +67,7 @@ public class SchedulerLockResourceTest {
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         try (final Connection connection = defaultDataSource.getConnection();
                 final PreparedStatement truncateStatement = connection.prepareStatement(
                         "TRUNCATE TABLE shedlock")) {

@@ -15,7 +15,7 @@ import io.quarkus.builder.Version;
 import io.quarkus.maven.dependency.Dependency;
 import io.quarkus.test.QuarkusUnitTest;
 
-public class ShouldFailWhenUsedDataSourceIsNotPresentTest {
+class ShouldFailWhenUsedDataSourceIsNotPresentTest {
     @RegisterExtension
     static final QuarkusUnitTest unitTest = new QuarkusUnitTest()
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
@@ -33,7 +33,7 @@ public class ShouldFailWhenUsedDataSourceIsNotPresentTest {
                     .hasNoSuppressedExceptions());
 
     @Test
-    public void test() {
+    void test() {
         Assertions.fail("Startup should have failed");
     }
 }

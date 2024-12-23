@@ -15,7 +15,7 @@ import io.quarkus.mongodb.MongoClientName;
 import io.quarkus.test.junit.QuarkusTest;
 
 @QuarkusTest
-public class SchedulerLockResourceTest {
+class SchedulerLockResourceTest {
     @Inject
     MongoClient defaultMongoClient;
     @Inject
@@ -23,7 +23,7 @@ public class SchedulerLockResourceTest {
     MongoClient clusterOneMongoClient;
 
     @Test
-    public void testShedlockEndpoint() {
+    void testShedlockEndpoint() {
         given()
                 .when().get("/shedlock")
                 .then()
@@ -36,7 +36,7 @@ public class SchedulerLockResourceTest {
     }
 
     @Test
-    public void testShedlockEndpointOnClusterOne() {
+    void testShedlockEndpointOnClusterOne() {
         given()
                 .when().get("/shedlock/clusterOne")
                 .then()
@@ -49,7 +49,7 @@ public class SchedulerLockResourceTest {
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         defaultMongoClient.getDatabase("shedLock").drop();
         clusterOneMongoClient.getDatabase("customDatabase").drop();
     }

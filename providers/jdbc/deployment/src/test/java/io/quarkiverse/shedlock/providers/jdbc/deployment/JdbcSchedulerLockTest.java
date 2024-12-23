@@ -23,7 +23,7 @@ import io.quarkus.builder.Version;
 import io.quarkus.maven.dependency.Dependency;
 import io.quarkus.test.QuarkusUnitTest;
 
-public class JdbcSchedulerLockTest {
+class JdbcSchedulerLockTest {
     @RegisterExtension
     static final QuarkusUnitTest unitTest = new QuarkusUnitTest()
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
@@ -40,7 +40,7 @@ public class JdbcSchedulerLockTest {
     LockableService lockableService;
 
     @Test
-    public void shouldUseDefaultTableName() {
+    void shouldUseDefaultTableName() {
         final List<String> tablesName = new ArrayList<>();
         try (final Connection connection = agroalDataSource.getConnection();
                 final PreparedStatement selectTablesNameStatement = connection.prepareStatement(
@@ -57,7 +57,7 @@ public class JdbcSchedulerLockTest {
     }
 
     @Test
-    public void shouldCreateALock() {
+    void shouldCreateALock() {
         lockableService.execute();
 
         final Integer count;
@@ -75,7 +75,7 @@ public class JdbcSchedulerLockTest {
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         try (final Connection connection = agroalDataSource.getConnection();
                 final PreparedStatement truncateStatement = connection.prepareStatement(
                         "TRUNCATE TABLE shedlock")) {

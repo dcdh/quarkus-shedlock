@@ -20,7 +20,7 @@ import io.quarkus.builder.Version;
 import io.quarkus.maven.dependency.Dependency;
 import io.quarkus.test.QuarkusUnitTest;
 
-public class MongoSchedulerLockTest {
+class MongoSchedulerLockTest {
     @RegisterExtension
     static final QuarkusUnitTest unitTest = new QuarkusUnitTest()
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
@@ -37,14 +37,14 @@ public class MongoSchedulerLockTest {
     MongoClient mongoClient;
 
     @Test
-    public void shouldUseDefaultDatabaseName() {
+    void shouldUseDefaultDatabaseName() {
         lockableService.execute();
 
         assertThat(mongoClient.listDatabaseNames()).contains("shedLock");
     }
 
     @Test
-    public void shouldCreateALock() {
+    void shouldCreateALock() {
         lockableService.execute();
 
         assertThat(mongoClient.getDatabase("shedLock").getCollection("shedLock")
@@ -53,7 +53,7 @@ public class MongoSchedulerLockTest {
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         mongoClient.getDatabase("shedLock").drop();
     }
 }

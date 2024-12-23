@@ -25,7 +25,7 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectSpy;
 
 @QuarkusTest
-public class SchedulerLockResourceTest {
+class SchedulerLockResourceTest {
     @Inject
     AgroalDataSource agroalDataSource;
     @Inject
@@ -34,7 +34,7 @@ public class SchedulerLockResourceTest {
     DefaultInMemoryLockProvider defaultInMemoryLockProvider;
 
     @Test
-    public void testShedlockInMemoryEndpoint() {
+    void testShedlockInMemoryEndpoint() {
         given()
                 .when().get("/shedlock/in-memory")
                 .then()
@@ -44,7 +44,7 @@ public class SchedulerLockResourceTest {
     }
 
     @Test
-    public void testShedlockJdbcEndpoint() {
+    void testShedlockJdbcEndpoint() {
         given()
                 .when().get("/shedlock/jdbc")
                 .then()
@@ -65,7 +65,7 @@ public class SchedulerLockResourceTest {
     }
 
     @Test
-    public void testShedlockMongoEndpoint() {
+    void testShedlockMongoEndpoint() {
         given()
                 .when().get("/shedlock/mongo")
                 .then()
@@ -78,7 +78,7 @@ public class SchedulerLockResourceTest {
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         try (final Connection connection = agroalDataSource.getConnection();
                 final PreparedStatement truncateStatement = connection.prepareStatement(
                         "TRUNCATE TABLE shedlock")) {

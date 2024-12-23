@@ -7,9 +7,9 @@ import org.junit.jupiter.api.Test;
 import io.quarkus.test.junit.QuarkusTest;
 
 @QuarkusTest
-public class SchedulerLockResourceTest {
+class SchedulerLockResourceTest {
     @Test
-    public void testShedlockEndpoint() {
+    void testShedlockEndpoint() {
         given()
                 .when().get("/shedlock")
                 .then()

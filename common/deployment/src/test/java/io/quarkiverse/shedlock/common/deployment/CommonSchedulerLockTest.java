@@ -12,7 +12,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.test.QuarkusUnitTest;
 
-public class CommonSchedulerLockTest {
+class CommonSchedulerLockTest {
     @RegisterExtension
     static final QuarkusUnitTest unitTest = new QuarkusUnitTest()
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
@@ -31,7 +31,7 @@ public class CommonSchedulerLockTest {
     DefaultLockProvider defaultLockProvider;
 
     @Test
-    public void shouldIntercept() {
+    void shouldIntercept() {
         // Given
 
         // When

@@ -10,7 +10,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.test.QuarkusUnitTest;
 
-public class InMemorySchedulerLockTest {
+class InMemorySchedulerLockTest {
     @RegisterExtension
     static final QuarkusUnitTest unitTest = new QuarkusUnitTest()
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
@@ -18,7 +18,7 @@ public class InMemorySchedulerLockTest {
                             "application.properties"));
 
     @Test
-    public void shouldStart() {
+    void shouldStart() {
         assertThat(true).isTrue();
     }
 }

@@ -20,7 +20,7 @@ import io.quarkus.maven.dependency.Dependency;
 import io.quarkus.mongodb.MongoClientName;
 import io.quarkus.test.QuarkusUnitTest;
 
-public class CustomInstanceAndDatabaseTest {
+class CustomInstanceAndDatabaseTest {
     @RegisterExtension
     static final QuarkusUnitTest unitTest = new QuarkusUnitTest()
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
@@ -38,14 +38,14 @@ public class CustomInstanceAndDatabaseTest {
     MongoClient clusterOne;
 
     @Test
-    public void shouldUseCustomInstanceAndDatabase() {
+    void shouldUseCustomInstanceAndDatabase() {
         lockableService.execute();
 
         assertThat(clusterOne.listDatabaseNames()).contains("customDatabase");
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         clusterOne.getDatabase("customDatabase").drop();
     }
 }
