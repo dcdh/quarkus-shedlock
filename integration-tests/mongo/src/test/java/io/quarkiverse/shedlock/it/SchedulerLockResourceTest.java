@@ -7,6 +7,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import jakarta.inject.Inject;
 
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.mongodb.client.MongoClient;
@@ -48,8 +49,9 @@ class SchedulerLockResourceTest {
                 .isEqualTo(1L);
     }
 
+    @BeforeEach
     @AfterEach
-    void tearDown() {
+    void drop() {
         defaultMongoClient.getDatabase("shedLock").drop();
         clusterOneMongoClient.getDatabase("customDatabase").drop();
     }

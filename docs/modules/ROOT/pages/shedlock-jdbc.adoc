@@ -1,4 +1,4 @@
-= Shedlock In Memory Provider
+= Shedlock Jdbc Provider
 
 include::./includes/attributes.adoc[]
 

@@ -3,6 +3,7 @@ package io.quarkiverse.shedlock.providers.mongo.deployment;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
+import java.util.stream.StreamSupport;
 
 import jakarta.inject.Inject;
 
@@ -41,7 +42,10 @@ class CustomInstanceAndDatabaseTest {
     void shouldUseCustomInstanceAndDatabase() {
         lockableService.execute();
 
-        assertThat(clusterOne.listDatabaseNames()).contains("customDatabase");
+        final List<String> databaseNames = StreamSupport.stream(
+                clusterOne.listDatabaseNames().spliterator(), false)
+                .toList();
+        assertThat(databaseNames).contains("customDatabase");
     }
 
     @AfterEach

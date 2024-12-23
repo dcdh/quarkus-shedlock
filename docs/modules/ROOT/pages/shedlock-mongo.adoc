@@ -1,4 +1,4 @@
-= Shedlock In Memory Provider
+= Shedlock Mongo Provider
 
 include::./includes/attributes.adoc[]
 
