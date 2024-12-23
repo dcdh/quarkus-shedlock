@@ -24,21 +24,30 @@ class MongoReactiveSchedulerLockTest {
     @RegisterExtension
     static final QuarkusUnitTest unitTest = new QuarkusUnitTest()
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
-                    .addClasses(LockableService.class)
+                    .addClasses(LockableResource.class)
                     .addAsResource(new StringAsset("quarkus.shedlock.defaults-lock-at-most-for=PT30S"),
                             "application.properties"))
             .setForcedDependencies(List.of(
                     Dependency.of("io.quarkus", "quarkus-mongodb-client", Version.getVersion())));
 
     @Inject
-    LockableService lockableService;
+    LockableResource lockableResource;
 
     @Inject
     ReactiveMongoClient reactiveMongoClient;
 
     @Test
+    void shouldLock() {
+        for (int called = 0; called < 5; called++) {
+            lockableResource.doSomething();
+        }
+
+        assertThat(lockableResource.getCallCount()).isEqualTo(1);
+    }
+
+    @Test
     void shouldUseDefaultDatabaseName() {
-        lockableService.execute();
+        lockableResource.doSomething();
 
         final List<String> databaseNames = reactiveMongoClient.listDatabaseNames().collect().asList().await().indefinitely();
         assertThat(databaseNames).contains("shedLock");
@@ -46,11 +55,11 @@ class MongoReactiveSchedulerLockTest {
 
     @Test
     void shouldCreateALock() {
-        lockableService.execute();
+        lockableResource.doSomething();
 
         final Long documents = reactiveMongoClient.getDatabase("shedLock").getCollection("shedLock")
                 .countDocuments(eq("_id",
-                        "io.quarkiverse.shedlock.providers.mongo.reactive.deployment.deployment.LockableService_execute"))
+                        "io.quarkiverse.shedlock.providers.mongo.reactive.deployment.deployment.LockableResource_doSomething"))
                 .await().indefinitely();
         assertThat(documents).isEqualTo(1L);
     }
@@ -58,6 +67,7 @@ class MongoReactiveSchedulerLockTest {
     @BeforeEach
     @AfterEach
     void dropCollections() {
+        lockableResource.reset();
         reactiveMongoClient.getDatabase("shedLock").drop().await().indefinitely();
     }
 }

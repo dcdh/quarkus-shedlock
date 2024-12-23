@@ -27,7 +27,7 @@ class JdbcSchedulerLockTest {
     @RegisterExtension
     static final QuarkusUnitTest unitTest = new QuarkusUnitTest()
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
-                    .addClasses(LockableService.class)
+                    .addClasses(LockableResource.class)
                     .addAsResource(new StringAsset("quarkus.shedlock.defaults-lock-at-most-for=PT30S"),
                             "application.properties"))
             .setForcedDependencies(List.of(
@@ -37,7 +37,16 @@ class JdbcSchedulerLockTest {
     AgroalDataSource agroalDataSource;
 
     @Inject
-    LockableService lockableService;
+    LockableResource lockableResource;
+
+    @Test
+    void shouldLock() {
+        for (int called = 0; called < 5; called++) {
+            lockableResource.doSomething();
+        }
+
+        assertThat(lockableResource.getCallCount()).isEqualTo(1);
+    }
 
     @Test
     void shouldUseDefaultTableName() {
@@ -58,12 +67,12 @@ class JdbcSchedulerLockTest {
 
     @Test
     void shouldCreateALock() {
-        lockableService.execute();
+        lockableResource.doSomething();
 
         final Integer count;
         try (final Connection connection = agroalDataSource.getConnection();
                 final PreparedStatement countLocksStatement = connection.prepareStatement(
-                        "SELECT COUNT(*) AS count FROM shedlock WHERE name = 'io.quarkiverse.shedlock.providers.jdbc.deployment.LockableService_execute'")) {
+                        "SELECT COUNT(*) AS count FROM shedlock WHERE name = 'io.quarkiverse.shedlock.providers.jdbc.deployment.LockableResource_doSomething'")) {
             final ResultSet countLocksResultSet = countLocksStatement.executeQuery();
             countLocksResultSet.next();
             count = countLocksResultSet.getInt("count");
@@ -76,6 +85,7 @@ class JdbcSchedulerLockTest {
 
     @AfterEach
     void tearDown() {
+        lockableResource.reset();
         try (final Connection connection = agroalDataSource.getConnection();
                 final PreparedStatement truncateStatement = connection.prepareStatement(
                         "TRUNCATE TABLE shedlock")) {

@@ -27,7 +27,7 @@ class CustomTableNameTest {
     @RegisterExtension
     static final QuarkusUnitTest unitTest = new QuarkusUnitTest()
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
-                    .addClasses(LockableService.class)
+                    .addClasses(LockableResource.class)
                     .addAsResource(new StringAsset("quarkus.shedlock.defaults-lock-at-most-for=PT30S\n" +
                             "quarkus.shedlock.jdbc.table-name=myShedLockTableName"),
                             "application.properties"))
