@@ -20,7 +20,7 @@ public class MongoLockableResource extends AbstractLockableResource {
 
     private final MongoClient defaultMongoClient;
     private final MongoClient clusterOneMongoClient;
-    // must be declared to be linked with the testcontainer mongodb container
+    // must be declared to start mongodb testcontainers
     private final ReactiveMongoClient defaultReactiveMongoClient;
     private final ReactiveMongoClient clusterOneReactiveMongoClient;
 
