@@ -15,9 +15,9 @@ class ShouldFailWhenDefaultLockAtMostForPropertyIsMissingTest {
     static final QuarkusUnitTest unitTest = new QuarkusUnitTest()
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
                     .addClasses(
-                            DefaultSchedulerLock.class,
-                            DefaultLockProvider.class,
-                            DefaultSchedulerLockInterceptor.class,
+                            TestSchedulerLock.class,
+                            StubbedLockProvider.class,
+                            TestSchedulerLockInterceptor.class,
                             LockableService.class))
             .assertException(throwable -> assertThat(throwable)
                     .hasNoSuppressedExceptions().hasMessageContaining("Configuration validation failed:\n" +

@@ -9,7 +9,7 @@ import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
 
 @ApplicationScoped
-public class DefaultLockProvider implements LockProvider {
+public class StubbedLockProvider implements LockProvider {
     private boolean hasBeenCalled = false;
 
     @Override

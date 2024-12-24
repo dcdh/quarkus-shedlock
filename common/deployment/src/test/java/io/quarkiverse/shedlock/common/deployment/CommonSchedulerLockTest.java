@@ -17,9 +17,9 @@ class CommonSchedulerLockTest {
     static final QuarkusUnitTest unitTest = new QuarkusUnitTest()
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
                     .addClasses(
-                            DefaultSchedulerLock.class,
-                            DefaultLockProvider.class,
-                            DefaultSchedulerLockInterceptor.class,
+                            TestSchedulerLock.class,
+                            StubbedLockProvider.class,
+                            TestSchedulerLockInterceptor.class,
                             LockableService.class)
                     .addAsResource(new StringAsset("quarkus.shedlock.defaults-lock-at-most-for=PT30S"),
                             "application.properties"));
@@ -28,7 +28,7 @@ class CommonSchedulerLockTest {
     LockableService lockableService;
 
     @Inject
-    DefaultLockProvider defaultLockProvider;
+    StubbedLockProvider stubbedLockProvider;
 
     @Test
     void shouldIntercept() {
@@ -38,6 +38,6 @@ class CommonSchedulerLockTest {
         lockableService.execute();
 
         // Then
-        assertThat(defaultLockProvider.hasBeenCalled()).isTrue();
+        assertThat(stubbedLockProvider.hasBeenCalled()).isTrue();
     }
 }

@@ -11,7 +11,7 @@ import io.quarkiverse.shedlock.common.runtime.LockDuration;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.TYPE, ElementType.METHOD })
 @Inherited
-public @interface DefaultSchedulerLock {
+public @interface TestSchedulerLock {
     @Nonbinding
     LockDuration lockDuration() default @LockDuration();
 }

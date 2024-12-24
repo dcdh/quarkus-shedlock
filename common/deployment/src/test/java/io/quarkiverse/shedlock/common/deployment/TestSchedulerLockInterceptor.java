@@ -14,15 +14,15 @@ import io.quarkiverse.shedlock.common.runtime.SchedulerLockInterceptorBase;
 import io.quarkiverse.shedlock.common.runtime.ShedLockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 
-@DefaultSchedulerLock
+@TestSchedulerLock
 @Priority(3001)
 @Interceptor
-public class DefaultSchedulerLockInterceptor extends SchedulerLockInterceptorBase {
-    final DefaultLockProvider lockProvider;
+public class TestSchedulerLockInterceptor extends SchedulerLockInterceptorBase {
+    final StubbedLockProvider lockProvider;
 
-    protected DefaultSchedulerLockInterceptor(final ShedLockConfiguration shedLockConfiguration,
+    protected TestSchedulerLockInterceptor(final ShedLockConfiguration shedLockConfiguration,
             final InstantProvider instantProvider,
-            final DefaultLockProvider lockProvider) {
+            final StubbedLockProvider lockProvider) {
         super(shedLockConfiguration, instantProvider);
         this.lockProvider = Objects.requireNonNull(lockProvider);
     }
@@ -40,6 +40,6 @@ public class DefaultSchedulerLockInterceptor extends SchedulerLockInterceptorBas
 
     @Override
     protected LockDuration lockDuration(Method method) {
-        return method.getAnnotation(DefaultSchedulerLock.class).lockDuration();
+        return method.getAnnotation(TestSchedulerLock.class).lockDuration();
     }
 }
