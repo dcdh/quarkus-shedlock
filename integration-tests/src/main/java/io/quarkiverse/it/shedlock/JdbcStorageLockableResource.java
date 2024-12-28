@@ -3,8 +3,10 @@ package io.quarkiverse.it.shedlock;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.time.Duration;
 import java.util.Objects;
 
+import io.quarkus.datasource.common.runtime.DataSourceUtil;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
@@ -13,7 +15,6 @@ import io.agroal.api.AgroalDataSource;
 import io.quarkiverse.shedlock.common.runtime.LockDuration;
 import io.quarkiverse.shedlock.common.runtime.SchedulerLockExecutor;
 import io.quarkiverse.shedlock.providers.jdbc.runtime.JdbcSchedulerLock;
-import io.quarkiverse.shedlock.providers.jdbc.runtime.JdbcSchedulerLockExecutor;
 import io.quarkus.agroal.DataSource;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor.TaskResult;
 
@@ -27,8 +28,8 @@ public class JdbcStorageLockableResource extends AbstractLockableResource {
 
     public JdbcStorageLockableResource(final AgroalDataSource defaultDataSource,
             @DataSource("master") final AgroalDataSource masterDataSource,
-            @JdbcSchedulerLockExecutor(lockAtMostFor = "PT30S", lockAtLeastFor = "PT10S") final SchedulerLockExecutor defaultSchedulerLockExecutor,
-            @JdbcSchedulerLockExecutor(dataSourceName = "master", lockAtMostFor = "PT30S", lockAtLeastFor = "PT10S") final SchedulerLockExecutor masterSchedulerLockExecutor) {
+            @DataSource(DataSourceUtil.DEFAULT_DATASOURCE_NAME) final SchedulerLockExecutor defaultSchedulerLockExecutor,
+            @DataSource("master") final SchedulerLockExecutor masterSchedulerLockExecutor) {
         this.defaultDataSource = Objects.requireNonNull(defaultDataSource);
         this.masterDataSource = Objects.requireNonNull(masterDataSource);
         this.defaultSchedulerLockExecutor = Objects.requireNonNull(defaultSchedulerLockExecutor);
@@ -53,14 +54,15 @@ public class JdbcStorageLockableResource extends AbstractLockableResource {
     @Path("execute/default")
     public ExecutionResultDTO executeSomethingUsingDefaultJdbcStorageForLock() {
         final TaskResult<Integer> result = defaultSchedulerLockExecutor.executeWithLock(this::doSomething,
-                "counterDefaultJdbc");
+                "counterDefaultJdbc", Duration.ofSeconds(30), Duration.ofSeconds(10));
         return new ExecutionResultDTO(result);
     }
 
     @POST
     @Path("execute/master")
     public ExecutionResultDTO executeSomethingUsingMasterJdbcStorageForLock() {
-        final TaskResult<Integer> result = masterSchedulerLockExecutor.executeWithLock(this::doSomething, "counterMasterJdbc");
+        final TaskResult<Integer> result = masterSchedulerLockExecutor.executeWithLock(this::doSomething,
+                "counterMasterJdbc", Duration.ofSeconds(30), Duration.ofSeconds(10));
         return new ExecutionResultDTO(result);
     }
 

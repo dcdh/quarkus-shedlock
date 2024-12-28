@@ -3,6 +3,7 @@ package io.quarkiverse.shedlock.providers.inmemory.deployment;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -19,7 +20,6 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import io.quarkiverse.shedlock.common.runtime.LockDuration;
 import io.quarkiverse.shedlock.common.runtime.SchedulerLockExecutor;
 import io.quarkiverse.shedlock.providers.inmemory.runtime.InMemorySchedulerLock;
-import io.quarkiverse.shedlock.providers.inmemory.runtime.InMemorySchedulerLockExecutor;
 import io.quarkus.test.QuarkusUnitTest;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor.TaskResult;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor.TaskWithResult;
@@ -35,7 +35,6 @@ class InMemorySchedulerLockTest {
     LockableResource lockableResource;
 
     @Inject
-    @InMemorySchedulerLockExecutor(lockAtMostFor = "PT30S", lockAtLeastFor = "PT10S")
     SchedulerLockExecutor schedulerLockExecutor;
 
     @Test
@@ -57,7 +56,8 @@ class InMemorySchedulerLockTest {
 
         // When
         for (int execution = 0; execution < 5; execution++) {
-            results.add(schedulerLockExecutor.executeWithLock(counterTask, "counter"));
+            results.add(schedulerLockExecutor.executeWithLock(counterTask, "counter",
+                    Duration.ofSeconds(30), Duration.ofSeconds(10)));
         }
 
         // Then

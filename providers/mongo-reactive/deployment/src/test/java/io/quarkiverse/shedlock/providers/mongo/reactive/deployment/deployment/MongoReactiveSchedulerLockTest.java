@@ -4,10 +4,13 @@ import static com.mongodb.client.model.Filters.eq;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import io.quarkiverse.shedlock.providers.mongo.reactive.runtime.runtime.Reactive;
+import io.quarkus.mongodb.MongoClientName;
 import jakarta.inject.Inject;
 
 import org.apache.commons.lang3.Validate;
@@ -20,7 +23,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkiverse.shedlock.common.runtime.SchedulerLockExecutor;
-import io.quarkiverse.shedlock.providers.mongo.reactive.runtime.runtime.MongoReactiveSchedulerLockExecutor;
 import io.quarkus.builder.Version;
 import io.quarkus.maven.dependency.Dependency;
 import io.quarkus.mongodb.reactive.ReactiveMongoClient;
@@ -44,7 +46,8 @@ class MongoReactiveSchedulerLockTest {
     ReactiveMongoClient reactiveMongoClient;
 
     @Inject
-    @MongoReactiveSchedulerLockExecutor(lockAtMostFor = "PT30S", lockAtLeastFor = "PT10S")
+    @Reactive
+    @MongoClientName
     SchedulerLockExecutor schedulerLockExecutor;
 
     @Test
@@ -77,7 +80,8 @@ class MongoReactiveSchedulerLockTest {
 
         // When
         for (int execution = 0; execution < 5; execution++) {
-            results.add(schedulerLockExecutor.executeWithLock(counterTask, "counter"));
+            results.add(schedulerLockExecutor.executeWithLock(counterTask, "counter",
+                    Duration.ofSeconds(30), Duration.ofSeconds(10)));
         }
 
         // Then
@@ -103,7 +107,7 @@ class MongoReactiveSchedulerLockTest {
 
         // When
         final LockingTaskExecutor.TaskResult<Integer> integerTaskResult = schedulerLockExecutor.executeWithLock(counterTask,
-                "counter");
+                "counter", Duration.ofSeconds(30), Duration.ofSeconds(10));
         Validate.validState(integerTaskResult.wasExecuted());
 
         // Then

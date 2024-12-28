@@ -4,6 +4,7 @@ import static com.mongodb.client.model.Filters.eq;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -21,9 +22,10 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import com.mongodb.client.MongoClient;
 
 import io.quarkiverse.shedlock.common.runtime.SchedulerLockExecutor;
-import io.quarkiverse.shedlock.providers.mongo.runtime.MongoSchedulerLockExecutor;
 import io.quarkus.builder.Version;
 import io.quarkus.maven.dependency.Dependency;
+import io.quarkus.mongodb.MongoClientName;
+import io.quarkus.mongodb.runtime.MongoClientBeanUtil;
 import io.quarkus.test.QuarkusUnitTest;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor;
 
@@ -44,7 +46,7 @@ class MongoSchedulerLockTest {
     MongoClient mongoClient;
 
     @Inject
-    @MongoSchedulerLockExecutor(lockAtMostFor = "PT30S", lockAtLeastFor = "PT10S")
+    @MongoClientName(MongoClientBeanUtil.DEFAULT_MONGOCLIENT_NAME)
     SchedulerLockExecutor schedulerLockExecutor;
 
     @Test
@@ -75,7 +77,8 @@ class MongoSchedulerLockTest {
 
         // When
         for (int execution = 0; execution < 5; execution++) {
-            results.add(schedulerLockExecutor.executeWithLock(counterTask, "counter"));
+            results.add(schedulerLockExecutor.executeWithLock(counterTask, "counter",
+                    Duration.ofSeconds(30), Duration.ofSeconds(10)));
         }
 
         // Then
@@ -101,7 +104,7 @@ class MongoSchedulerLockTest {
 
         // When
         final LockingTaskExecutor.TaskResult<Integer> integerTaskResult = schedulerLockExecutor.executeWithLock(counterTask,
-                "counter");
+                "counter", Duration.ofSeconds(30), Duration.ofSeconds(10));
         Validate.validState(integerTaskResult.wasExecuted());
 
         // Then

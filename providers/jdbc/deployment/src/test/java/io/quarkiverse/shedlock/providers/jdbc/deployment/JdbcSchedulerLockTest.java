@@ -7,6 +7,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -23,8 +24,9 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.agroal.api.AgroalDataSource;
 import io.quarkiverse.shedlock.common.runtime.SchedulerLockExecutor;
-import io.quarkiverse.shedlock.providers.jdbc.runtime.JdbcSchedulerLockExecutor;
+import io.quarkus.agroal.DataSource;
 import io.quarkus.builder.Version;
+import io.quarkus.datasource.common.runtime.DataSourceUtil;
 import io.quarkus.maven.dependency.Dependency;
 import io.quarkus.test.QuarkusUnitTest;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor.TaskResult;
@@ -50,7 +52,7 @@ class JdbcSchedulerLockTest {
     LockableResource lockableResource;
 
     @Inject
-    @JdbcSchedulerLockExecutor(lockAtMostFor = "PT30S", lockAtLeastFor = "PT10S")
+    @DataSource(DataSourceUtil.DEFAULT_DATASOURCE_NAME)
     SchedulerLockExecutor schedulerLockExecutor;
 
     @Test
@@ -90,7 +92,9 @@ class JdbcSchedulerLockTest {
 
         // When
         for (int execution = 0; execution < 5; execution++) {
-            results.add(schedulerLockExecutor.executeWithLock(counterTask, "counter"));
+            // "PT30S", lockAtLeastFor = "PT10S"
+            results.add(schedulerLockExecutor.executeWithLock(counterTask, "counter",
+                    Duration.ofSeconds(30), Duration.ofSeconds(10)));
         }
 
         // Then
@@ -117,7 +121,8 @@ class JdbcSchedulerLockTest {
         // When
         // need to use another lock name because the JdbcLockProvider extends StorageBasedLockProvider
         // which hold lock references locally
-        final TaskResult<Integer> integerTaskResult = schedulerLockExecutor.executeWithLock(counterTask, "counter2");
+        final TaskResult<Integer> integerTaskResult = schedulerLockExecutor.executeWithLock(counterTask, "counter2",
+                Duration.ofSeconds(30), Duration.ofSeconds(10));
         Validate.validState(integerTaskResult.wasExecuted());
 
         // Then

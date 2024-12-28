@@ -1,24 +1,12 @@
 package io.quarkiverse.shedlock.providers.mongo.reactive.deployment.deployment;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import jakarta.inject.Singleton;
-
-import org.jboss.jandex.AnnotationInstance;
-import org.jboss.jandex.ClassType;
-import org.jboss.jandex.DotName;
-import org.jboss.jandex.IndexView;
-
 import io.quarkiverse.shedlock.common.runtime.InstantProvider;
 import io.quarkiverse.shedlock.common.runtime.SchedulerLockExecutor;
 import io.quarkiverse.shedlock.common.runtime.ShedLockConfiguration;
 import io.quarkiverse.shedlock.providers.mongo.reactive.runtime.runtime.MongoReactiveConfig;
-import io.quarkiverse.shedlock.providers.mongo.reactive.runtime.runtime.MongoReactiveSchedulerLockExecutor;
 import io.quarkiverse.shedlock.providers.mongo.reactive.runtime.runtime.MongoReactiveSchedulerLockExecutorRecorder;
 import io.quarkiverse.shedlock.providers.mongo.reactive.runtime.runtime.MongoReactiveSchedulerLockInterceptor;
+import io.quarkiverse.shedlock.providers.mongo.reactive.runtime.runtime.Reactive;
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
 import io.quarkus.arc.deployment.SyntheticBeanBuildItem;
 import io.quarkus.deployment.annotations.BuildProducer;
@@ -27,6 +15,15 @@ import io.quarkus.deployment.annotations.ExecutionTime;
 import io.quarkus.deployment.annotations.Record;
 import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
+import io.quarkus.mongodb.MongoClientName;
+import io.quarkus.mongodb.runtime.MongoClientBeanUtil;
+import jakarta.inject.Singleton;
+import org.jboss.jandex.ClassType;
+import org.jboss.jandex.DotName;
+
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class MongoReactiveSchedulerLockProcessor {
 
@@ -53,54 +50,22 @@ public class MongoReactiveSchedulerLockProcessor {
             final ShedLockConfiguration shedLockConfiguration,
             final MongoReactiveConfig mongoReactiveConfig,
             final MongoReactiveSchedulerLockExecutorRecorder mongoReactiveSchedulerLockExecutorRecorder) {
-        final IndexView index = combinedIndexBuildItem.getComputingIndex();
-        final Set<Qualifier> qualifiers = combinedIndexBuildItem.getIndex()
-                .getAnnotations(DotName.createSimple(MongoReactiveSchedulerLockExecutor.class))
+        final Set<String> mongoClientsName = combinedIndexBuildItem.getComputingIndex()
+                .getAnnotations(MongoClientName.class)
                 .stream()
-                .map(qualifier -> {
-                    final String mongoClientName = qualifier.valueWithDefault(index, "mongoClientName").asString();
-                    final String lockAtMostFor = qualifier.valueWithDefault(index, "lockAtMostFor").asString();
-                    final String lockAtLeastFor = qualifier.valueWithDefault(index, "lockAtLeastFor").asString();
-                    return new Qualifier(mongoClientName, lockAtMostFor, lockAtLeastFor);
-                })
+                .map(name -> name.value() != null ? name.value().asString() : MongoClientBeanUtil.DEFAULT_MONGOCLIENT_NAME)
                 .collect(Collectors.toSet());
 
-        return qualifiers.stream()
-                .map(qualifier -> SyntheticBeanBuildItem.configure(SchedulerLockExecutor.class)
+        return mongoClientsName.stream()
+                .map(mongoClientName -> SyntheticBeanBuildItem.configure(SchedulerLockExecutor.class)
                         .scope(Singleton.class)
-                        .createWith(
-                                mongoReactiveSchedulerLockExecutorRecorder.schedulerLockExecutorSupplier(shedLockConfiguration,
-                                        mongoReactiveConfig,
-                                        qualifier.mongoClientName,
-                                        qualifier.lockAtMostFor,
-                                        qualifier.lockAtLeastFor))
-                        .addQualifier(qualifier.toQualifier())
+                        .createWith(mongoReactiveSchedulerLockExecutorRecorder.schedulerLockExecutorSupplier(shedLockConfiguration, mongoReactiveConfig, mongoClientName))
+                        .addQualifier().annotation(MongoClientName.class).addValue("value", mongoClientName).done()
+                        .addQualifier().annotation(Reactive.class).done()
                         .addInjectionPoint(ClassType.create(DotName.createSimple(InstantProvider.class)))
                         .unremovable()
                         .setRuntimeInit()
                         .done())
                 .toList();
-    }
-
-    // https://github.com/quarkusio/quarkus/issues/45289
-    @BuildStep
-    AdditionalBeanBuildItem registerQualifier() {
-        return new AdditionalBeanBuildItem(MongoReactiveSchedulerLockExecutor.class);
-    }
-
-    record Qualifier(String mongoClientName, String lockAtMostFor, String lockAtLeastFor) {
-        Qualifier {
-            Objects.requireNonNull(mongoClientName);
-            Objects.requireNonNull(lockAtMostFor);
-            Objects.requireNonNull(lockAtLeastFor);
-        }
-
-        AnnotationInstance toQualifier() {
-            return AnnotationInstance.builder(MongoReactiveSchedulerLockExecutor.class)
-                    .add("mongoClientName", mongoClientName)
-                    .add("lockAtMostFor", lockAtMostFor)
-                    .add("lockAtLeastFor", lockAtLeastFor)
-                    .build();
-        }
     }
 }

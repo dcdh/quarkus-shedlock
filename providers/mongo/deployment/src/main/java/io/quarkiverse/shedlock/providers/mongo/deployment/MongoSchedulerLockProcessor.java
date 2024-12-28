@@ -1,22 +1,19 @@
 package io.quarkiverse.shedlock.providers.mongo.deployment;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import io.quarkus.mongodb.runtime.MongoClientBeanUtil;
 import jakarta.inject.Singleton;
 
-import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.ClassType;
 import org.jboss.jandex.DotName;
-import org.jboss.jandex.IndexView;
 
 import io.quarkiverse.shedlock.common.runtime.InstantProvider;
 import io.quarkiverse.shedlock.common.runtime.SchedulerLockExecutor;
 import io.quarkiverse.shedlock.common.runtime.ShedLockConfiguration;
 import io.quarkiverse.shedlock.providers.mongo.runtime.MongoConfig;
-import io.quarkiverse.shedlock.providers.mongo.runtime.MongoSchedulerLockExecutor;
 import io.quarkiverse.shedlock.providers.mongo.runtime.MongoSchedulerLockExecutorRecorder;
 import io.quarkiverse.shedlock.providers.mongo.runtime.MongoSchedulerLockInterceptor;
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
@@ -27,6 +24,7 @@ import io.quarkus.deployment.annotations.ExecutionTime;
 import io.quarkus.deployment.annotations.Record;
 import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
+import io.quarkus.mongodb.MongoClientName;
 
 public class MongoSchedulerLockProcessor {
 
@@ -53,53 +51,23 @@ public class MongoSchedulerLockProcessor {
             final ShedLockConfiguration shedLockConfiguration,
             final MongoConfig mongoConfig,
             final MongoSchedulerLockExecutorRecorder mongoSchedulerLockExecutorRecorder) {
-        final IndexView index = combinedIndexBuildItem.getComputingIndex();
-        final Set<Qualifier> qualifiers = combinedIndexBuildItem.getIndex()
-                .getAnnotations(DotName.createSimple(MongoSchedulerLockExecutor.class))
+        final Set<String> mongoClientsName = combinedIndexBuildItem.getComputingIndex()
+                .getAnnotations(MongoClientName.class)
                 .stream()
-                .map(qualifier -> {
-                    final String mongoClientName = qualifier.valueWithDefault(index, "mongoClientName").asString();
-                    final String lockAtMostFor = qualifier.valueWithDefault(index, "lockAtMostFor").asString();
-                    final String lockAtLeastFor = qualifier.valueWithDefault(index, "lockAtLeastFor").asString();
-                    return new Qualifier(mongoClientName, lockAtMostFor, lockAtLeastFor);
-                })
+                .map(name -> name.value() != null ? name.value().asString() : MongoClientBeanUtil.DEFAULT_MONGOCLIENT_NAME)
                 .collect(Collectors.toSet());
 
-        return qualifiers.stream()
-                .map(qualifier -> SyntheticBeanBuildItem.configure(SchedulerLockExecutor.class)
+        return mongoClientsName.stream()
+                .map(mongoClientName -> SyntheticBeanBuildItem.configure(SchedulerLockExecutor.class)
+                        .types(SchedulerLockExecutor.class)
                         .scope(Singleton.class)
                         .createWith(mongoSchedulerLockExecutorRecorder.schedulerLockExecutorSupplier(shedLockConfiguration,
-                                mongoConfig,
-                                qualifier.mongoClientName,
-                                qualifier.lockAtMostFor,
-                                qualifier.lockAtLeastFor))
-                        .addQualifier(qualifier.toQualifier())
+                                mongoConfig, mongoClientName))
+                        .addQualifier().annotation(MongoClientName.class).addValue("value", mongoClientName).done()
                         .addInjectionPoint(ClassType.create(DotName.createSimple(InstantProvider.class)))
                         .unremovable()
                         .setRuntimeInit()
                         .done())
                 .toList();
-    }
-
-    // https://github.com/quarkusio/quarkus/issues/45289
-    @BuildStep
-    AdditionalBeanBuildItem registerQualifier() {
-        return new AdditionalBeanBuildItem(MongoSchedulerLockExecutor.class);
-    }
-
-    record Qualifier(String mongoClientName, String lockAtMostFor, String lockAtLeastFor) {
-        Qualifier {
-            Objects.requireNonNull(mongoClientName);
-            Objects.requireNonNull(lockAtMostFor);
-            Objects.requireNonNull(lockAtLeastFor);
-        }
-
-        AnnotationInstance toQualifier() {
-            return AnnotationInstance.builder(MongoSchedulerLockExecutor.class)
-                    .add("mongoClientName", mongoClientName)
-                    .add("lockAtMostFor", lockAtMostFor)
-                    .add("lockAtLeastFor", lockAtLeastFor)
-                    .build();
-        }
     }
 }

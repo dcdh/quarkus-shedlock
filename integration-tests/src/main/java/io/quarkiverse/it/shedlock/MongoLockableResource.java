@@ -1,7 +1,9 @@
 package io.quarkiverse.it.shedlock;
 
+import java.time.Duration;
 import java.util.Objects;
 
+import io.quarkiverse.shedlock.providers.mongo.reactive.runtime.runtime.Reactive;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
@@ -11,9 +13,7 @@ import com.mongodb.client.MongoClient;
 import io.quarkiverse.shedlock.common.runtime.LockDuration;
 import io.quarkiverse.shedlock.common.runtime.SchedulerLockExecutor;
 import io.quarkiverse.shedlock.providers.mongo.reactive.runtime.runtime.MongoReactiveSchedulerLock;
-import io.quarkiverse.shedlock.providers.mongo.reactive.runtime.runtime.MongoReactiveSchedulerLockExecutor;
 import io.quarkiverse.shedlock.providers.mongo.runtime.MongoSchedulerLock;
-import io.quarkiverse.shedlock.providers.mongo.runtime.MongoSchedulerLockExecutor;
 import io.quarkus.mongodb.MongoClientName;
 import io.quarkus.mongodb.reactive.ReactiveMongoClient;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor.TaskResult;
@@ -36,10 +36,10 @@ public class MongoLockableResource extends AbstractLockableResource {
             @MongoClientName("cluster1") final MongoClient clusterOneMongoClient,
             final ReactiveMongoClient defaultReactiveMongoClient,
             @MongoClientName("cluster1") ReactiveMongoClient clusterOneReactiveMongoClient,
-            @MongoSchedulerLockExecutor(lockAtMostFor = "PT30S", lockAtLeastFor = "PT10S") final SchedulerLockExecutor defaultSchedulerLockExecutor,
-            @MongoSchedulerLockExecutor(mongoClientName = "cluster1", lockAtMostFor = "PT30S", lockAtLeastFor = "PT10S") final SchedulerLockExecutor clusterOneSchedulerLockExecutor,
-            @MongoReactiveSchedulerLockExecutor(lockAtMostFor = "PT30S", lockAtLeastFor = "PT10S") final SchedulerLockExecutor defaultReactiveSchedulerLockExecutor,
-            @MongoReactiveSchedulerLockExecutor(mongoClientName = "cluster1", lockAtMostFor = "PT30S", lockAtLeastFor = "PT10S") final SchedulerLockExecutor clusterOneReactiveSchedulerLockExecutor) {
+            @MongoClientName final SchedulerLockExecutor defaultSchedulerLockExecutor,
+            @MongoClientName("cluster1") final SchedulerLockExecutor clusterOneSchedulerLockExecutor,
+            @Reactive @MongoClientName final SchedulerLockExecutor defaultReactiveSchedulerLockExecutor,
+            @Reactive @MongoClientName("cluster1") final SchedulerLockExecutor clusterOneReactiveSchedulerLockExecutor) {
         this.defaultMongoClient = Objects.requireNonNull(defaultMongoClient);
         this.clusterOneMongoClient = Objects.requireNonNull(clusterOneMongoClient);
         this.defaultReactiveMongoClient = Objects.requireNonNull(defaultReactiveMongoClient);
@@ -82,7 +82,7 @@ public class MongoLockableResource extends AbstractLockableResource {
     @Path("execute/default")
     public ExecutionResultDTO executeSomethingUsingMongoClient() {
         final TaskResult<Integer> result = defaultSchedulerLockExecutor.executeWithLock(this::doSomething,
-                "counterDefaultMongo");
+                "counterDefaultMongo", Duration.ofSeconds(30), Duration.ofSeconds(10));
         return new ExecutionResultDTO(result);
     }
 
@@ -90,7 +90,7 @@ public class MongoLockableResource extends AbstractLockableResource {
     @Path("execute/clusterOne")
     public ExecutionResultDTO executeSomethingUsingMongoClientClusterOne() {
         final TaskResult<Integer> result = clusterOneSchedulerLockExecutor.executeWithLock(this::doSomething,
-                "counterClusterOneMongo");
+                "counterClusterOneMongo", Duration.ofSeconds(30), Duration.ofSeconds(10));
         return new ExecutionResultDTO(result);
     }
 
@@ -98,7 +98,7 @@ public class MongoLockableResource extends AbstractLockableResource {
     @Path("execute/reactive/default")
     public ExecutionResultDTO executeSomethingUsingReactiveMongoClient() {
         final TaskResult<Integer> result = defaultReactiveSchedulerLockExecutor.executeWithLock(this::doSomething,
-                "counterDefaultReactiveMongo");
+                "counterDefaultReactiveMongo", Duration.ofSeconds(30), Duration.ofSeconds(10));
         return new ExecutionResultDTO(result);
     }
 
@@ -106,7 +106,7 @@ public class MongoLockableResource extends AbstractLockableResource {
     @Path("execute/reactive/clusterOne")
     public ExecutionResultDTO executeSomethingUsingReactiveMongoClientClusterOne() {
         final TaskResult<Integer> result = clusterOneReactiveSchedulerLockExecutor.executeWithLock(this::doSomething,
-                "counterClusterOneReactiveMongo");
+                "counterClusterOneReactiveMongo", Duration.ofSeconds(30), Duration.ofSeconds(10));
         return new ExecutionResultDTO(result);
     }
 
